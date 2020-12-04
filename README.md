@@ -4,6 +4,6 @@ It's like StrawPoll, but with Cassandra
 
 functionalities:
 
-- single-choice pools
-- multiple-choice pools
+- single-choice polls
+- multiple-choice polls
 - other types of voting than majority of votes
