@@ -1,0 +1,3 @@
+package cassandra
+
+// PollRepo implementation for cassandra...
