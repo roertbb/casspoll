@@ -1,22 +1,28 @@
 package poll
 
+import (
+	"time"
+
+	"github.com/gocql/gocql"
+)
+
 type PollType int
 
 const (
-	singleChoice PollType = iota
-	multipleChoice
+	SingleChoice PollType = iota
+	MultipleChoice
 )
 
 type Poll struct {
-	ID          int
+	ID          gocql.UUID
 	Title       string
 	Description string
 	PollType    PollType
-	DueTime     int
+	DueTime     time.Time
 }
 
 type Answer struct {
-	ID   int
+	ID   gocql.UUID
 	Text string
 }
 
