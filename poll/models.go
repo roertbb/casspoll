@@ -22,11 +22,13 @@ type Poll struct {
 }
 
 type Answer struct {
-	ID   gocql.UUID
-	Text string
+	ID     gocql.UUID
+	Text   string
+	PollID gocql.UUID
 }
 
-type Result struct {
-	Answer  Answer
-	VotesNo int
+type Vote struct {
+	PollID   gocql.UUID
+	AnswerID gocql.UUID
+	VoterID  gocql.UUID
 }
