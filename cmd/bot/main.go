@@ -30,10 +30,13 @@ func main() {
 
 	service.CreatePoll(&examplePoll, &answers)
 
-	service.Vote(examplePoll.ID, answers[0].ID)
-	service.Vote(examplePoll.ID, answers[0].ID)
-	service.Vote(examplePoll.ID, answers[1].ID)
+	voterID, _ := gocql.RandomUUID()
+	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voterID})
+	service.Vote(&poll.Vote{AnswerID: answers[1].ID, PollID: examplePoll.ID, VoterID: voterID})
 
-	results, _ := service.GetResults(examplePoll.ID)
+	voter2ID, _ := gocql.RandomUUID()
+	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voter2ID})
+
+	results, _ := service.GetResults(examplePoll.ID, examplePoll.DueTime)
 	fmt.Println(results)
 }

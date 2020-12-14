@@ -2,6 +2,7 @@ package poll
 
 import (
 	"log"
+	"time"
 
 	"github.com/gocql/gocql"
 )
@@ -24,7 +25,7 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) error {
 	}
 
 	for _, answer := range *answers {
-		err := p.repo.CreateAnswer(&answer, poll.ID)
+		err := p.repo.CreateAnswer(&answer)
 		if err != nil {
 			log.Fatal(err)
 			return err
@@ -34,10 +35,11 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) error {
 	return nil
 }
 
-func (p *pollService) Vote(pollID, answerID gocql.UUID) error {
-	return p.repo.CreateVote(pollID, answerID)
+func (p *pollService) Vote(vote *Vote) error {
+	timestamp := time.Now()
+	return p.repo.CreateVote(vote, timestamp)
 }
 
-func (p *pollService) GetResults(pollID gocql.UUID) (*[]Result, error) {
-	return p.repo.GetResults(pollID)
+func (p *pollService) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[gocql.UUID]int, error) {
+	return p.repo.GetResults(pollID, dueTime)
 }

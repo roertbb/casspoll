@@ -1,11 +1,15 @@
 package poll
 
-import "github.com/gocql/gocql"
+import (
+	"time"
+
+	"github.com/gocql/gocql"
+)
 
 type PollService interface {
 	CreatePoll(poll *Poll, answers *[]Answer) error
-	Vote(pollID, answerID gocql.UUID) error
-	GetResults(pollID gocql.UUID) (*[]Result, error)
+	Vote(vote *Vote) error
+	GetResults(pollID gocql.UUID, dueTime time.Time) (*map[gocql.UUID]int, error)
 	// ListPolls() (*[]Poll, error)
 	// ListAnswers(poll *Poll) (*[]Answer, error)
 }
