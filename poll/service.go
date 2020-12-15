@@ -7,9 +7,9 @@ import (
 )
 
 type PollService interface {
+	GetActivePolls() (*[]Poll, error)
 	CreatePoll(poll *Poll, answers *[]Answer) error
+	GetAnswers(pollID gocql.UUID) (*[]Answer, error)
 	Vote(vote *Vote) error
-	GetResults(pollID gocql.UUID, dueTime time.Time) (*map[gocql.UUID]int, error)
-	// ListPolls() (*[]Poll, error)
-	// ListAnswers(poll *Poll) (*[]Answer, error)
+	GetResults(pollID gocql.UUID, dueTime time.Time) (*map[Answer]int, error)
 }

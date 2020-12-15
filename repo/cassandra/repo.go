@@ -1,7 +1,6 @@
 package cassandra
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -31,8 +30,55 @@ func NewCassandraRepo() (*cassandraRepo, error) {
 	return repo, nil
 }
 
+func (c *cassandraRepo) GetActivePolls(timestamp time.Time) (*[]poll.Poll, error) {
+	var pollID gocql.UUID
+	var title, description string
+	var dueTime time.Time
+	var pollType poll.PollType
+
+	activePolls := []poll.Poll{}
+
+	// TODO: think how can it be achieved without ALLOW FILTERING
+	// detecting when getting the results that it's passed and adding bool value that it's no more active
+	// it will allow us to easily skip the non active, while they could be still available when getting poll by id
+	iter := c.session.Query(`SELECT pollId, title, description, dueTime, pollType FROM polls where dueTime > ? ALLOW FILTERING`, timestamp).Consistency(gocql.One).Iter()
+	for iter.Scan(&pollID, &title, &description, &dueTime, &pollType) {
+		activePolls = append(activePolls, poll.Poll{
+			ID:          pollID,
+			Title:       title,
+			Description: description,
+			PollType:    pollType,
+			DueTime:     dueTime,
+		})
+	}
+	if err := iter.Close(); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return &activePolls, nil
+}
+
 func (c *cassandraRepo) CreatePoll(p *poll.Poll) error {
 	return c.session.Query(`INSERT INTO polls (pollId, title, description, dueTime, pollType) VALUES (?, ?, ?, ?, ?)`, p.ID, p.Title, p.Description, p.DueTime, p.PollType).Exec()
+}
+
+func (c *cassandraRepo) GetAnswersByPollID(pollID gocql.UUID) (*[]poll.Answer, error) {
+	var answerID gocql.UUID
+	var text string
+
+	answers := []poll.Answer{}
+
+	iter := c.session.Query(`SELECT answerId, answer FROM answers WHERE pollId = ?`, pollID).Consistency(gocql.One).Iter()
+	for iter.Scan(&answerID, &text) {
+		answers = append(answers, poll.Answer{ID: answerID, Text: text, PollID: pollID})
+	}
+	if err := iter.Close(); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	return &answers, nil
 }
 
 func (c *cassandraRepo) CreateAnswer(answer *poll.Answer) error {
@@ -48,17 +94,19 @@ func (c *cassandraRepo) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[g
 	var votesNo int
 	results := map[gocql.UUID]int{}
 
-	// TODO: add check if timestamp < dueTime
-	// SELECT COUNT(*) FROM Votes WHERE pollId = ? AND timestamp < dueTime GROUP BY answerId
+	// TODO: how to handle check if timestamp < dueTime without ALLOW FILTERING
+	// SELECT answerId, COUNT(voterId) FROM votes WHERE pollId = ? GROUP BY answerId -- works fine
 	// https://www.datastax.com/blog/new-cassandra-30-materialized-views
+	// anyway making < condition could not achievable anyway even when clustered :thinking:
+	// potentially can skip that condition and prevent from posting votes after dueTime is met from inside service layer, quack :v
 
-	iter := c.session.Query(`SELECT answerId, COUNT(voterId) FROM votes WHERE pollId = ? GROUP BY answerId`, pollID).Consistency(gocql.One).Iter()
+	iter := c.session.Query(`SELECT answerId, COUNT(*) FROM votes WHERE pollId = ? AND createdAt < ? GROUP BY answerId ALLOW FILTERING`, pollID, dueTime).Consistency(gocql.One).Iter()
 	for iter.Scan(&answerID, &votesNo) {
-		fmt.Println(answerID, votesNo)
 		results[answerID] = votesNo
 	}
 	if err := iter.Close(); err != nil {
 		log.Fatal(err)
+		return nil, err
 	}
 
 	return &results, nil

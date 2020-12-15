@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS Polls (
     dueTime timestamp,
     pollType int,
 
-    PRIMARY KEY (pollId)
+    PRIMARY KEY (pollId, dueTime)
 );
 
 CREATE TABLE IF NOT EXISTS Answers (
