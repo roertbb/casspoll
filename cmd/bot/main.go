@@ -13,22 +13,32 @@ func main() {
 	repo, _ := cass.NewCassandraRepo()
 	service := poll.NewPollService(repo)
 
-	id, _ := gocql.RandomUUID()
+	pollID, _ := gocql.RandomUUID()
 	examplePoll := poll.Poll{
-		ID:          id,
+		ID:          pollID,
 		Title:       "test",
 		Description: "test desc",
 		PollType:    poll.SingleChoice,
-		DueTime:     time.Now(),
+		DueTime:     time.Now().Add(time.Second * 2),
 	}
 
 	answers := []poll.Answer{}
 	for _, idx := range []string{"1", "2", "3"} {
 		id, _ := gocql.RandomUUID()
-		answers = append(answers, poll.Answer{ID: id, Text: idx})
+		answers = append(answers, poll.Answer{ID: id, Text: idx, PollID: pollID})
 	}
 
 	service.CreatePoll(&examplePoll, &answers)
+
+	polls, _ := service.GetActivePolls()
+	fmt.Println("---")
+	fmt.Println("active polls")
+	fmt.Println(polls)
+
+	pollAnswers, _ := service.GetAnswers(pollID)
+	fmt.Println("---")
+	fmt.Println("answers")
+	fmt.Println(pollAnswers)
 
 	voterID, _ := gocql.RandomUUID()
 	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voterID})
@@ -38,5 +48,8 @@ func main() {
 	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voter2ID})
 
 	results, _ := service.GetResults(examplePoll.ID, examplePoll.DueTime)
+
+	fmt.Println("---")
+	fmt.Println("results")
 	fmt.Println(results)
 }
