@@ -11,19 +11,19 @@ import (
 
 const layout = "2006-01-02T15:04:05"
 
-func selectStringOption(label string, options []string) (string, error) {
+func selectOption(label string, options []string) (int, string, error) {
 	prompt := promptui.Select{
 		Label: label,
 		Items: options,
 	}
 
-	_, result, err := prompt.Run()
+	idx, result, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return "", err
+		return -1, "", err
 	}
 
-	return result, nil
+	return idx, result, nil
 }
 
 func promptString(label string) (string, error) {

@@ -20,16 +20,18 @@ const (
 	multipleChoice = "Multiple-Choice"
 	quit           = "Quit"
 	back           = "Back"
+	sendVotes      = "Send votes"
 )
 
 var pollService poll.PollService
+var voterID gocql.UUID
 var pollTypeToString map[poll.PollType]string = map[poll.PollType]string{
 	0: singleChoice,
 	1: multipleChoice,
 }
 
 func menu() {
-	result, _ := selectStringOption("Select option", []string{
+	_, result, _ := selectOption("Select option", []string{
 		listPolls,
 		createNewPoll,
 		quit,
@@ -57,17 +59,17 @@ func createPoll() {
 
 	if newPoll.Title, err = promptNonEmptyString("Enter title"); err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
 	if newPoll.Description, err = promptNonEmptyString("Enter description"); err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
 	if newPoll.DueTime, err = promptFutureDate("Enter due time (in YYYY-MM-DDTHH:MM:SS format)"); err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
 	prompt := promptui.Select{
@@ -78,7 +80,7 @@ func createPoll() {
 	choiceType, _, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
-		return
+		os.Exit(1)
 	}
 	newPoll.PollType = poll.PollType(choiceType)
 
@@ -93,7 +95,7 @@ func createPoll() {
 		answer, err := promptString("Enter answer")
 		if err != nil {
 			log.Fatal(err)
-			return
+			os.Exit(1)
 		}
 
 		if answer != "" {
@@ -109,42 +111,32 @@ func createPoll() {
 	err = pollService.CreatePoll(&newPoll, &answers)
 	if err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
 	clearScreen()
 
 	fmt.Println("Successfully created poll!")
-
-	menu()
 }
 
 func listActivePolls() {
 	polls, err := pollService.GetActivePolls()
 	if err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
-	pollList := []string{}
-	pollMap := map[string]poll.Poll{}
+	actions := []string{}
 	for _, poll := range *polls {
-		id := fmt.Sprintf("[%s] %s", poll.ID.String(), poll.Description)
-		pollList = append(pollList, id)
-		pollMap[id] = poll
+		actions = append(actions, poll.Description)
 	}
-	pollList = append(pollList, back)
+	actions = append(actions, back)
 
-	result, _ := selectStringOption("Select poll", pollList)
-
+	idx, _, _ := selectOption("Select poll", actions)
 	clearScreen()
 
-	switch result {
-	case back:
-		menu()
-	default:
-		selectedPoll := pollMap[result]
-		pollDetails(&selectedPoll)
+	if idx < len(*polls) {
+		pollDetails(&(*polls)[idx])
 	}
 }
 
@@ -152,7 +144,7 @@ func pollDetails(p *poll.Poll) {
 	answers, err := pollService.GetAnswers(p.ID)
 	if err != nil {
 		log.Fatal(err)
-		return
+		os.Exit(1)
 	}
 
 	logPollDetails(p)
@@ -161,32 +153,84 @@ func pollDetails(p *poll.Poll) {
 		fmt.Println(fmt.Sprintf("- %s", answer.Text))
 	}
 
-	result, _ := selectStringOption("Select option", []string{votePoll, getPollResults, back})
+	_, result, _ := selectOption("Select option", []string{votePoll, getPollResults, back})
 
 	clearScreen()
 
 	switch result {
 	case back:
-		listActivePolls()
+		return
 	case votePoll:
-		vote(p, answers)
+		vote(p, *answers)
 	case getPollResults:
 		getResults(p)
 	}
 }
 
-func vote(p *poll.Poll, answers *[]poll.Answer) {
+func vote(p *poll.Poll, answers []poll.Answer) {
+	votes := []poll.Vote{}
+
+	options := []string{}
+	for _, answer := range answers {
+		options = append(options, answer.Text)
+	}
+
 	switch p.PollType {
 	case poll.SingleChoice:
-		fmt.Println("TODO: poll.SingleChoice")
-	case poll.MultipleChoice:
-		fmt.Println("TODO: poll.MultipleChoice")
+		options = append(options, back)
+		idx, _, _ := selectOption("Select answer", options)
+		if idx >= len(answers) {
+			return
+		}
 
+		votes = append(votes, poll.Vote{
+			PollID:   p.ID,
+			AnswerID: answers[idx].ID,
+			VoterID:  voterID,
+		})
+	case poll.MultipleChoice:
+		options = append(options, sendVotes)
+		options = append(options, back)
+
+		done := false
+		for !done {
+			idx, _, _ := selectOption("Select answer", options)
+			if idx < len(answers) {
+				votes = append(votes, poll.Vote{
+					PollID:   p.ID,
+					AnswerID: answers[idx].ID,
+					VoterID:  voterID,
+				})
+				options = append(options[:idx], options[idx+1:]...)
+				answers = append(answers[:idx], answers[idx+1:]...)
+			} else if idx == len(answers) {
+				done = true
+			} else if idx > len(answers) {
+				return
+			}
+		}
 	}
+
+	err := pollService.Vote(p, &votes)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	clearScreen()
 }
 
 func getResults(p *poll.Poll) {
-	fmt.Println("TODO: get poll results")
+	results, err := pollService.GetResults(p.ID)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	logPollDetails(p)
+	for _, result := range *results {
+		fmt.Println(fmt.Sprintf("%s - %d", result.Answer.Text, result.VotesNo))
+	}
 }
 
 func logPollDetails(p *poll.Poll) {
@@ -202,6 +246,11 @@ func main() {
 	repo, _ := cass.NewCassandraRepo()
 	pollService = poll.NewPollService(repo)
 
+	voterID, _ = gocql.RandomUUID()
+
 	clearScreen()
-	menu()
+
+	for {
+		menu()
+	}
 }

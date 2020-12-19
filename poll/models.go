@@ -32,3 +32,8 @@ type Vote struct {
 	AnswerID gocql.UUID
 	VoterID  gocql.UUID
 }
+
+type Result struct {
+	Answer  *Answer
+	VotesNo int
+}
