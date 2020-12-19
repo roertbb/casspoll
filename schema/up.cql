@@ -1,37 +1,37 @@
-CREATE TABLE IF NOT EXISTS Polls (
-    pollId uuid,
+CREATE TABLE IF NOT EXISTS polls (
+    poll_id uuid,
     title text,
     description text,
-    pollType int,
-    dueTime timestamp,
+    poll_type int,
+    due_time timestamp,
 
-    PRIMARY KEY (pollId, dueTime)
-) WITH CLUSTERING ORDER BY (dueTime DESC);
+    PRIMARY KEY (poll_id, due_time)
+) WITH CLUSTERING ORDER BY (due_time DESC);
 
-CREATE TABLE IF NOT EXISTS ActivePolls (
-    pollId uuid,
+CREATE TABLE IF NOT EXISTS active_polls (
+    poll_id uuid,
     title text,
     description text,
-    pollType int,
-    dueTime timestamp,
+    poll_type int,
+    due_time timestamp,
 
-    PRIMARY KEY (pollId, dueTime)
-) WITH CLUSTERING ORDER BY (dueTime DESC);
+    PRIMARY KEY (poll_id, due_time)
+) WITH CLUSTERING ORDER BY (due_time DESC);
 
-CREATE TABLE IF NOT EXISTS Answers (
-    answerId uuid,
+CREATE TABLE IF NOT EXISTS answers (
+    answer_id uuid,
     answer text,
-    pollId uuid,
+    poll_id uuid,
 
-    PRIMARY KEY (pollId, answerId)
+    PRIMARY KEY (poll_id, answer_id)
 );
 
-CREATE TABLE IF NOT EXISTS Votes (
-    pollId uuid,
-    answerId uuid,
-    voterId uuid,
+CREATE TABLE IF NOT EXISTS votes (
+    poll_id uuid,
+    answer_id uuid,
+    voter_id uuid,
     
-    PRIMARY KEY (pollId, answerId, voterId)
+    PRIMARY KEY (poll_id, answer_id, voter_id)
 );
 
 -- TODO: Votes by voterId

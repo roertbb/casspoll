@@ -7,7 +7,7 @@ import (
 )
 
 type PollRepo interface {
-	GetActivePolls(timestamp time.Time) (*[]Poll, error)
+	GetActivePolls() (*[]Poll, error)
 	CreatePoll(poll *Poll) error
 	GetAnswersByPollID(pollID gocql.UUID) (*[]Answer, error)
 	CreateAnswer(answer *Answer) error

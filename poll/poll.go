@@ -18,8 +18,7 @@ func NewPollService(pollRepo PollRepo) PollService {
 }
 
 func (p *pollService) GetActivePolls() (*[]Poll, error) {
-	timestamp := time.Now()
-	return p.repo.GetActivePolls(timestamp)
+	return p.repo.GetActivePolls()
 }
 
 func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) error {
@@ -45,8 +44,7 @@ func (p *pollService) GetAnswers(pollID gocql.UUID) (*[]Answer, error) {
 }
 
 func (p *pollService) Vote(vote *Vote) error {
-	timestamp := time.Now()
-	return p.repo.CreateVote(vote, timestamp)
+	return p.repo.CreateVote(vote, time.Now())
 }
 
 func (p *pollService) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[Answer]int, error) {
