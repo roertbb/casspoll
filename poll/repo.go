@@ -12,5 +12,5 @@ type PollRepo interface {
 	GetAnswersByPollID(pollID gocql.UUID) (*[]Answer, error)
 	CreateAnswer(answer *Answer) error
 	CreateVote(vote *Vote, timestamp time.Time) error
-	GetResults(pollID gocql.UUID, dueTime time.Time) (*map[gocql.UUID]int, error)
+	GetResults(pollID gocql.UUID) (*map[gocql.UUID]int, error)
 }

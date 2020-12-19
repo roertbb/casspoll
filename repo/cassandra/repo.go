@@ -98,7 +98,7 @@ func (c *cassandraRepo) CreateVote(vote *poll.Vote, now time.Time) error {
 	return c.session.Query(`INSERT INTO votes (answer_id, poll_id, voter_id) VALUES (?, ?, ?) USING TIMESTAMP ?`, vote.AnswerID, vote.PollID, vote.VoterID, timestamp).Exec()
 }
 
-func (c *cassandraRepo) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[gocql.UUID]int, error) {
+func (c *cassandraRepo) GetResults(pollID gocql.UUID) (*map[gocql.UUID]int, error) {
 	var answerID gocql.UUID
 	var votesNo int
 	results := map[gocql.UUID]int{}

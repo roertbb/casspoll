@@ -54,7 +54,7 @@ func main() {
 	}
 	service.Vote(&examplePoll, &votes)
 
-	results, _ := service.GetResults(examplePoll.ID, examplePoll.DueTime)
+	results, _ := service.GetResults(examplePoll.ID)
 
 	fmt.Println("---")
 	fmt.Println("results")

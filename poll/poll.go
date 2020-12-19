@@ -3,6 +3,7 @@ package poll
 import (
 	"errors"
 	"log"
+	"sort"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -69,21 +70,26 @@ func (p *pollService) Vote(pollData *Poll, votes *[]Vote) error {
 	return nil
 }
 
-func (p *pollService) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[Answer]int, error) {
+func (p *pollService) GetResults(pollID gocql.UUID) (*[]Result, error) {
 	answers, err := p.repo.GetAnswersByPollID(pollID)
 	if err != nil {
 		return nil, err
 	}
 
-	results, _ := p.repo.GetResults(pollID, dueTime)
+	results, _ := p.repo.GetResults(pollID)
 	if err != nil {
 		return nil, err
 	}
 
-	pollResults := map[Answer]int{}
-	for _, answer := range *answers {
-		pollResults[answer] = (*results)[answer.ID]
+	resSlice := []Result{}
+	for idx := range *answers {
+		curAnswer := (*answers)[idx]
+		resSlice = append(resSlice, Result{Answer: &curAnswer, VotesNo: (*results)[curAnswer.ID]})
 	}
 
-	return &pollResults, nil
+	sort.Slice(resSlice, func(i, j int) bool {
+		return resSlice[i].VotesNo > resSlice[j].VotesNo
+	})
+
+	return &resSlice, nil
 }
