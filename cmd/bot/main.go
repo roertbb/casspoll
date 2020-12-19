@@ -19,7 +19,7 @@ func main() {
 		Title:       "test",
 		Description: "test desc",
 		PollType:    poll.SingleChoice,
-		DueTime:     time.Now().Add(time.Second * 15),
+		DueTime:     time.Now().Add(time.Second * 10),
 	}
 
 	answers := []poll.Answer{}
