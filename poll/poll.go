@@ -1,6 +1,7 @@
 package poll
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -43,8 +44,29 @@ func (p *pollService) GetAnswers(pollID gocql.UUID) (*[]Answer, error) {
 	return p.repo.GetAnswersByPollID(pollID)
 }
 
-func (p *pollService) Vote(vote *Vote) error {
-	return p.repo.CreateVote(vote, time.Now())
+func (p *pollService) Vote(pollData *Poll, votes *[]Vote) error {
+	now := time.Now()
+	if now.After(pollData.DueTime) {
+		return errors.New("Cannot vote in the poll after it's due time")
+	}
+
+	if len(*votes) == 0 {
+		return errors.New("You need to select at least one answer")
+	}
+
+	if pollData.PollType == SingleChoice && len(*votes) > 1 {
+		return errors.New("Cannot select multiple answers for single-choice poll")
+	}
+
+	for _, vote := range *votes {
+		err := p.repo.CreateVote(&vote, now)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (p *pollService) GetResults(pollID gocql.UUID, dueTime time.Time) (*map[Answer]int, error) {

@@ -18,7 +18,7 @@ func main() {
 		ID:          pollID,
 		Title:       "test",
 		Description: "test desc",
-		PollType:    poll.SingleChoice,
+		PollType:    poll.MultipleChoice,
 		DueTime:     time.Now().Add(time.Second * 10),
 	}
 
@@ -41,11 +41,18 @@ func main() {
 	fmt.Println(pollAnswers)
 
 	voterID, _ := gocql.RandomUUID()
-	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voterID})
-	service.Vote(&poll.Vote{AnswerID: answers[1].ID, PollID: examplePoll.ID, VoterID: voterID})
+
+	votes := []poll.Vote{
+		{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voterID},
+		{AnswerID: answers[1].ID, PollID: examplePoll.ID, VoterID: voterID},
+	}
+	service.Vote(&examplePoll, &votes)
 
 	voter2ID, _ := gocql.RandomUUID()
-	service.Vote(&poll.Vote{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voter2ID})
+	votes = []poll.Vote{
+		{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voter2ID},
+	}
+	service.Vote(&examplePoll, &votes)
 
 	results, _ := service.GetResults(examplePoll.ID, examplePoll.DueTime)
 
