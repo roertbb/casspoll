@@ -23,43 +23,64 @@ func (p *pollService) GetActivePolls() (*[]Poll, error) {
 	return p.repo.GetActivePolls()
 }
 
-func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) error {
+func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) (gocql.UUID, error) {
+	pollID, _ := gocql.RandomUUID()
+	poll.ID = pollID
+
 	err := p.repo.CreatePoll(poll)
 	if err != nil {
 		log.Fatal(err)
-		return err
+		uuid, _ := gocql.UUIDFromBytes(nil)
+		return uuid, err
 	}
 
 	for _, answer := range *answers {
+		answerID, _ := gocql.RandomUUID()
+		answer.ID = answerID
+		answer.PollID = pollID
+
 		err := p.repo.CreateAnswer(&answer)
 		if err != nil {
 			log.Fatal(err)
-			return err
+			uuid, _ := gocql.UUIDFromBytes(nil)
+			return uuid, err
 		}
 	}
 
-	return nil
+	return pollID, nil
 }
 
 func (p *pollService) GetAnswers(pollID gocql.UUID) (*[]Answer, error) {
 	return p.repo.GetAnswersByPollID(pollID)
 }
 
-func (p *pollService) Vote(pollData *Poll, votes *[]Vote) error {
+func (p *pollService) Vote(pollID gocql.UUID, answerIDs *[]gocql.UUID, voterID gocql.UUID) error {
 	now := time.Now()
+
+	pollData, err := p.repo.GetPollByID(pollID)
+	if err != nil {
+		return errors.New("There is no poll with given id")
+	}
+
 	if now.After(pollData.DueTime) {
 		return errors.New("Cannot vote in the poll after it's due time")
 	}
 
-	if len(*votes) == 0 {
+	if len(*answerIDs) == 0 {
 		return errors.New("You need to select at least one answer")
 	}
 
-	if pollData.PollType == SingleChoice && len(*votes) > 1 {
+	if pollData.PollType == SingleChoice && len(*answerIDs) > 1 {
 		return errors.New("Cannot select multiple answers for single-choice poll")
 	}
 
-	for _, vote := range *votes {
+	for idx := range *answerIDs {
+		vote := Vote{
+			PollID:   pollID,
+			AnswerID: (*answerIDs)[idx],
+			VoterID:  voterID,
+		}
+
 		err := p.repo.CreateVote(&vote, now)
 		if err != nil {
 			log.Fatal(err)

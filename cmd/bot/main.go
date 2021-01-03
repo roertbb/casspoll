@@ -14,7 +14,7 @@ import (
 
 func main() {
 	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
-	if len(addresses) == 0 {
+	if len(addresses) == 1 && addresses[0] == "" {
 		log.Fatal("ADDRESS env variable not specified")
 		os.Exit(1)
 	}
@@ -55,18 +55,10 @@ func main() {
 	fmt.Println(pollAnswers)
 
 	voterID, _ := gocql.RandomUUID()
-
-	votes := []poll.Vote{
-		{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voterID},
-		{AnswerID: answers[1].ID, PollID: examplePoll.ID, VoterID: voterID},
-	}
-	service.Vote(&examplePoll, &votes)
+	service.Vote(pollID, &[]gocql.UUID{answers[0].ID, answers[1].ID}, voterID)
 
 	voter2ID, _ := gocql.RandomUUID()
-	votes = []poll.Vote{
-		{AnswerID: answers[0].ID, PollID: examplePoll.ID, VoterID: voter2ID},
-	}
-	service.Vote(&examplePoll, &votes)
+	service.Vote(pollID, &[]gocql.UUID{answers[0].ID}, voter2ID)
 
 	results, _ := service.GetResults(examplePoll.ID)
 

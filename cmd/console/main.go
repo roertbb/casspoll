@@ -53,10 +53,7 @@ func menu() {
 func createPoll() {
 	var err error
 
-	pollID, _ := gocql.RandomUUID()
-	newPoll := poll.Poll{
-		ID: pollID,
-	}
+	newPoll := poll.Poll{}
 
 	if newPoll.Title, err = promptNonEmptyString("Enter title"); err != nil {
 		log.Fatal(err)
@@ -100,8 +97,7 @@ func createPoll() {
 		}
 
 		if answer != "" {
-			answerID, _ := gocql.RandomUUID()
-			answers = append(answers, poll.Answer{ID: answerID, Text: answer, PollID: newPoll.ID})
+			answers = append(answers, poll.Answer{Text: answer})
 		} else {
 			done = true
 		}
@@ -109,7 +105,7 @@ func createPoll() {
 
 	reverse(answers)
 
-	err = pollService.CreatePoll(&newPoll, &answers)
+	uuid, err := pollService.CreatePoll(&newPoll, &answers)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -117,7 +113,7 @@ func createPoll() {
 
 	clearScreen()
 
-	fmt.Println("Successfully created poll!")
+	fmt.Println("Successfully created poll!", uuid)
 }
 
 func listActivePolls() {
@@ -169,7 +165,7 @@ func pollDetails(p *poll.Poll) {
 }
 
 func vote(p *poll.Poll, answers []poll.Answer) {
-	votes := []poll.Vote{}
+	votes := []gocql.UUID{}
 
 	options := []string{}
 	for _, answer := range answers {
@@ -184,11 +180,7 @@ func vote(p *poll.Poll, answers []poll.Answer) {
 			return
 		}
 
-		votes = append(votes, poll.Vote{
-			PollID:   p.ID,
-			AnswerID: answers[idx].ID,
-			VoterID:  voterID,
-		})
+		votes = append(votes, answers[idx].ID)
 	case poll.MultipleChoice:
 		options = append(options, sendVotes)
 		options = append(options, back)
@@ -197,11 +189,7 @@ func vote(p *poll.Poll, answers []poll.Answer) {
 		for !done {
 			idx, _, _ := selectOption("Select answer", options)
 			if idx < len(answers) {
-				votes = append(votes, poll.Vote{
-					PollID:   p.ID,
-					AnswerID: answers[idx].ID,
-					VoterID:  voterID,
-				})
+				votes = append(votes, answers[idx].ID)
 				options = append(options[:idx], options[idx+1:]...)
 				answers = append(answers[:idx], answers[idx+1:]...)
 			} else if idx == len(answers) {
@@ -212,7 +200,7 @@ func vote(p *poll.Poll, answers []poll.Answer) {
 		}
 	}
 
-	err := pollService.Vote(p, &votes)
+	err := pollService.Vote(p.ID, &votes, voterID)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -245,7 +233,7 @@ func logPollDetails(p *poll.Poll) {
 
 func main() {
 	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
-	if len(addresses) == 0 {
+	if len(addresses) == 1 && addresses[0] == "" {
 		log.Fatal("ADDRESS env variable not specified")
 		os.Exit(1)
 	}

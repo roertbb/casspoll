@@ -71,6 +71,28 @@ func (c *cassandraRepo) CreatePoll(p *poll.Poll) error {
 	return err
 }
 
+func (c *cassandraRepo) GetPollByID(pollID gocql.UUID) (*poll.Poll, error) {
+	var title, description string
+	var dueTime time.Time
+	var pollType poll.PollType
+
+	err := c.session.Query(`SELECT title, description, due_time, poll_type FROM polls`).Consistency(gocql.One).Scan(&title, &description, &dueTime, &pollType)
+	if err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+
+	selectedPoll := poll.Poll{
+		ID:          pollID,
+		Title:       title,
+		Description: description,
+		PollType:    pollType,
+		DueTime:     dueTime,
+	}
+
+	return &selectedPoll, nil
+}
+
 func (c *cassandraRepo) GetAnswersByPollID(pollID gocql.UUID) (*[]poll.Answer, error) {
 	var answerID gocql.UUID
 	var text string
