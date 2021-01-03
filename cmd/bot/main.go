@@ -36,13 +36,7 @@ func main() {
 		DueTime:     time.Now().Add(time.Second * 10),
 	}
 
-	answers := []poll.Answer{}
-	for _, idx := range []string{"1", "2", "3"} {
-		id, _ := gocql.RandomUUID()
-		answers = append(answers, poll.Answer{ID: id, Text: idx, PollID: pollID})
-	}
-
-	service.CreatePoll(&examplePoll, &answers)
+	service.CreatePoll(&examplePoll, &[]string{"1", "2", "3"})
 
 	polls, _ := service.GetActivePolls()
 	fmt.Println("---")
@@ -55,10 +49,10 @@ func main() {
 	fmt.Println(pollAnswers)
 
 	voterID, _ := gocql.RandomUUID()
-	service.Vote(pollID, &[]gocql.UUID{answers[0].ID, answers[1].ID}, voterID)
+	service.Vote(pollID, &[]gocql.UUID{(*pollAnswers)[0].ID, (*pollAnswers)[1].ID}, voterID)
 
 	voter2ID, _ := gocql.RandomUUID()
-	service.Vote(pollID, &[]gocql.UUID{answers[0].ID}, voter2ID)
+	service.Vote(pollID, &[]gocql.UUID{(*pollAnswers)[0].ID}, voter2ID)
 
 	results, _ := service.GetResults(examplePoll.ID)
 

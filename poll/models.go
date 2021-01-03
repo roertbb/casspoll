@@ -14,26 +14,26 @@ const (
 )
 
 type Poll struct {
-	ID          gocql.UUID
-	Title       string
-	Description string
-	PollType    PollType
-	DueTime     time.Time
+	ID          gocql.UUID `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	PollType    PollType   `json:"type"`
+	DueTime     time.Time  `json:"dueTime"`
 }
 
 type Answer struct {
-	ID     gocql.UUID
-	Text   string
-	PollID gocql.UUID
+	ID     gocql.UUID `json:"id"`
+	Text   string     `json:"text"`
+	PollID gocql.UUID `json:"-"`
 }
 
 type Vote struct {
-	PollID   gocql.UUID
-	AnswerID gocql.UUID
-	VoterID  gocql.UUID
+	AnswerID gocql.UUID `json:"answerId"`
+	VoterID  gocql.UUID `json:"voterId"`
+	PollID   gocql.UUID `json:"-"`
 }
 
 type Result struct {
-	Answer  *Answer
-	VotesNo int
+	Answer  *Answer `json:"answers"`
+	VotesNo int     `json:"votesNo"`
 }

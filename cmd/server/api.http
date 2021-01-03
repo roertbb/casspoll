@@ -1,0 +1,32 @@
+GET http://localhost:8080/polls HTTP/1.1
+
+###
+
+POST http://localhost:3000/polls HTTP/1.1
+Content-Type: application/json
+
+{
+    "title": "1",
+    "description": "1",
+    "type": 0,
+    "dueTime": "2021-01-03T23:00:00Z",
+    "answers": ["a1", "a2"],
+}
+
+###
+
+GET http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/answers HTTP/1.1
+
+###
+
+GET http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/results HTTP/1.1
+
+###
+
+POST http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/vote HTTP/1.1
+Content-Type: application/json
+
+{
+    "voterId": "f05b4ddf-a543-4eaa-8a36-5f9b1523d80e",
+    "answers": ["ea93b3a6-f556-4cf3-9aa5-3795f1ce2931"],    
+}

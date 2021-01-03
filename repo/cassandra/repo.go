@@ -76,7 +76,7 @@ func (c *cassandraRepo) GetPollByID(pollID gocql.UUID) (*poll.Poll, error) {
 	var dueTime time.Time
 	var pollType poll.PollType
 
-	err := c.session.Query(`SELECT title, description, due_time, poll_type FROM polls`).Consistency(gocql.One).Scan(&title, &description, &dueTime, &pollType)
+	err := c.session.Query(`SELECT title, description, due_time, poll_type FROM polls WHERE poll_id = ?`, pollID).Consistency(gocql.One).Scan(&title, &description, &dueTime, &pollType)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err

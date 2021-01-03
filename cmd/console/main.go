@@ -87,7 +87,7 @@ func createPoll() {
 	fmt.Println("(type and confirm with <Enter> / leave empty and press <Enter> if all answers are added)")
 	fmt.Println("----------------")
 
-	answers := []poll.Answer{}
+	answers := []string{}
 	done := false
 	for !done {
 		answer, err := promptString("Enter answer")
@@ -97,7 +97,7 @@ func createPoll() {
 		}
 
 		if answer != "" {
-			answers = append(answers, poll.Answer{Text: answer})
+			answers = append(answers, answer)
 		} else {
 			done = true
 		}

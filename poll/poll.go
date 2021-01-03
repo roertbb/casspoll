@@ -23,7 +23,7 @@ func (p *pollService) GetActivePolls() (*[]Poll, error) {
 	return p.repo.GetActivePolls()
 }
 
-func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) (gocql.UUID, error) {
+func (p *pollService) CreatePoll(poll *Poll, answers *[]string) (gocql.UUID, error) {
 	pollID, _ := gocql.RandomUUID()
 	poll.ID = pollID
 
@@ -36,10 +36,8 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]Answer) (gocql.UUID, err
 
 	for _, answer := range *answers {
 		answerID, _ := gocql.RandomUUID()
-		answer.ID = answerID
-		answer.PollID = pollID
-
-		err := p.repo.CreateAnswer(&answer)
+		a := Answer{ID: answerID, Text: answer, PollID: pollID}
+		err := p.repo.CreateAnswer(&a)
 		if err != nil {
 			log.Fatal(err)
 			uuid, _ := gocql.UUIDFromBytes(nil)
