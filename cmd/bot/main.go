@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -10,7 +13,18 @@ import (
 )
 
 func main() {
-	repo, _ := cass.NewCassandraRepo()
+	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
+	if len(addresses) == 0 {
+		log.Fatal("ADDRESS env variable not specified")
+		os.Exit(1)
+	}
+	keyspace := os.Getenv("KEYSPACE")
+	if keyspace == "" {
+		log.Fatal("KEYSPACE env variable not specified")
+		os.Exit(1)
+	}
+
+	repo, _ := cass.NewCassandraRepo(addresses, keyspace)
 	service := poll.NewPollService(repo)
 
 	pollID, _ := gocql.RandomUUID()

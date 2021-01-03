@@ -13,9 +13,9 @@ type cassandraRepo struct {
 	session *gocql.Session
 }
 
-func NewCassandraRepo() (*cassandraRepo, error) {
-	cluster := gocql.NewCluster("127.0.0.1")
-	cluster.Keyspace = "casspoll"
+func NewCassandraRepo(addresses []string, keyspace string) (*cassandraRepo, error) {
+	cluster := gocql.NewCluster(addresses...)
+	cluster.Keyspace = keyspace
 	cluster.Consistency = gocql.One
 	session, err := cluster.CreateSession()
 	if err != nil {
@@ -102,11 +102,6 @@ func (c *cassandraRepo) GetResults(pollID gocql.UUID) (*map[gocql.UUID]int, erro
 	var answerID gocql.UUID
 	var votesNo int
 	results := map[gocql.UUID]int{}
-
-	// TODO: how to handle check if timestamp < dueTime without ALLOW FILTERING
-	// https://www.datastax.com/blog/new-cassandra-30-materialized-views
-	// potentially can skip that condition and prevent from posting votes after dueTime is met from inside service layer, quack :v
-	// iter := c.session.Query(`SELECT answerId, COUNT(*) FROM votes WHERE pollId = ? AND createdAt < ? GROUP BY answerId ALLOW FILTERING`, pollID, dueTime).Consistency(gocql.One).Iter()
 
 	iter := c.session.Query(`SELECT answer_id, COUNT(*) FROM votes WHERE poll_id = ? GROUP BY answer_id`, pollID).Consistency(gocql.One).Iter()
 	for iter.Scan(&answerID, &votesNo) {

@@ -33,5 +33,3 @@ CREATE TABLE IF NOT EXISTS votes (
     
     PRIMARY KEY (poll_id, answer_id, voter_id)
 );
-
--- TODO: Votes by voterId
