@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -149,6 +150,8 @@ func main() {
 	r.HandleFunc("/polls/{uuid}/answers", getAnswers).Methods("GET")
 	r.HandleFunc("/polls/{uuid}/results", getResults).Methods("GET")
 	r.HandleFunc("/polls/{uuid}/vote", vote).Methods("POST")
+
+	fmt.Println("server running - 127.0.0.1:8080")
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

@@ -1,3 +1,8 @@
+CREATE KEYSPACE IF NOT EXISTS casspoll
+  WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 3 };
+
+USE casspoll;
+
 CREATE TABLE IF NOT EXISTS polls (
     poll_id uuid,
     title text,

@@ -1,0 +1,67 @@
+version: "2.4"
+
+services:
+  cass1:
+    image: cass
+    build: ./cass
+    container_name: cass1
+    hostname: cass1
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks:
+      cass_net:
+        ipv4_address: 10.0.0.2
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "9042:9042"
+      - "8080:8080" # expose 8080 for server
+    environment:
+      CASSANDRA_SEEDS: "10.0.0.2,10.0.0.3"
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+
+  cass2:
+    image: cass
+    container_name: cass2
+    hostname: cass2
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks:
+      cass_net:
+        ipv4_address: 10.0.0.3
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "9043:9042"
+      - "8081:8080" # expose 8081 for server
+    environment:
+      CASSANDRA_SEEDS: "10.0.0.2,10.0.0.3"
+    depends_on:
+      cass1:
+        condition: service_healthy
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+
+networks:
+  default:
+    external:
+      name: host
+  cass_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
