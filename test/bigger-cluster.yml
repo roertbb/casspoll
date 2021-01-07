@@ -1,0 +1,145 @@
+version: "2"
+services:
+  router:
+    container_name: router
+    image: cassandra:3.11.8
+    networks:
+      first-network:
+        ipv4_address: 10.0.0.2
+      second-network:
+        ipv4_address: 10.0.1.2
+    cap_add:
+      - NET_ADMIN
+    restart: always
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+
+  seed1:
+    cap_add:
+      - NET_ADMIN
+    container_name: seed1
+    image: cass
+    build: ./cass
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    environment:
+      - ROUTER=10.0.0.2
+      - CASSANDRA_SEEDS=10.0.0.3,10.0.1.3
+    ports:
+      - "9042:9042"
+      - "8080:8080" # expose 8080 for server
+    networks:
+      first-network:
+        ipv4_address: 10.0.0.3
+    restart: always
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+    depends_on:
+      - router
+
+  node1:
+    cap_add:
+      - NET_ADMIN
+    container_name: node1
+    image: cassandra:3.11.8
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    environment:
+      - ROUTER=10.0.0.2
+      - CASSANDRA_SEEDS=10.0.0.3,10.0.1.3
+    ports:
+      - "9044:9042"
+      - "8082:8080" # expose 8082 for server
+    networks:
+      - first-network
+    restart: always
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+    depends_on:
+      - seed1
+
+  seed2:
+    cap_add:
+      - NET_ADMIN
+    container_name: seed2
+    image: cass
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    environment:
+      - ROUTER=10.0.1.2
+      - CASSANDRA_SEEDS=10.0.0.3,10.0.1.3
+    ports:
+      - "9043:9042"
+      - "8081:8080" # expose 8081 for server
+    networks:
+      second-network:
+        ipv4_address: 10.0.1.3
+    restart: always
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+    depends_on:
+      - router
+
+  node2:
+    cap_add:
+      - NET_ADMIN
+    container_name: node2
+    image: cassandra:3.11.8
+    mem_limit: 1024m
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    environment:
+      - ROUTER=10.0.1.2
+      - CASSANDRA_SEEDS=10.0.0.3,10.0.1.3
+    ports:
+      - "9045:9042"
+      - "8083:8080" # expose 8080 for server
+    networks:
+      - second-network
+    restart: always
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
+    depends_on:
+      - seed2
+
+networks:
+  default:
+    external:
+      name: host
+  first-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.0.0/24
+  second-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.1.0/24

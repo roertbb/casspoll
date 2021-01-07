@@ -2,8 +2,7 @@ version: "2.4"
 
 services:
   cass1:
-    image: cass
-    build: ./cass
+    image: cassandra:3.11.8
     container_name: cass1
     hostname: cass1
     mem_limit: 1024m
@@ -28,7 +27,7 @@ services:
       - ../bin:/build
 
   cass2:
-    image: cass
+    image: cassandra:3.11.8
     container_name: cass2
     hostname: cass2
     mem_limit: 1024m
