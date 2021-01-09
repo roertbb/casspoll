@@ -44,7 +44,11 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var data createPollDTO
 	err := json.Unmarshal(reqBody, &data)
-	// TODO: validate body
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to parse request body"})
+		return
+	}
 
 	p := poll.Poll{
 		Title:       data.Title,
@@ -65,10 +69,37 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]gocql.UUID{"id": uuid})
 }
 
+func getPollByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	uuid, err := gocql.ParseUUID(vars["uuid"])
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
+		return
+	}
+
+	poll, err := pollService.GetPollByID(uuid)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(poll)
+}
+
 func getAnswers(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
-	// TODO: validate param
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
+		return
+	}
+
 	answers, err := pollService.GetAnswers(uuid)
 
 	if err != nil {
@@ -84,7 +115,12 @@ func getAnswers(w http.ResponseWriter, r *http.Request) {
 func getResults(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
-	// TODO: validate param
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
+		return
+	}
+
 	results, err := pollService.GetResults(uuid)
 
 	if err != nil {
@@ -100,7 +136,11 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 func vote(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
-	// TODO: validate param
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
+		return
+	}
 
 	type voteDTO struct {
 		VoterID string   `json:"voterId"`
@@ -110,7 +150,11 @@ func vote(w http.ResponseWriter, r *http.Request) {
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	var data voteDTO
 	err = json.Unmarshal(reqBody, &data)
-	// TODO: validate body
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to parse request body"})
+		return
+	}
 
 	voterUUID, _ := gocql.ParseUUID(data.VoterID)
 	answerUUIDs := []gocql.UUID{}
@@ -147,6 +191,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/polls", getActivePolls).Methods("GET")
 	r.HandleFunc("/polls", createPoll).Methods("POST")
+	r.HandleFunc("/polls/{uuid}", getPollByID).Methods("GET")
 	r.HandleFunc("/polls/{uuid}/answers", getAnswers).Methods("GET")
 	r.HandleFunc("/polls/{uuid}/results", getResults).Methods("GET")
 	r.HandleFunc("/polls/{uuid}/vote", vote).Methods("POST")

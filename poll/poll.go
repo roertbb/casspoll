@@ -23,15 +23,22 @@ func (p *pollService) GetActivePolls() (*[]Poll, error) {
 	return p.repo.GetActivePolls()
 }
 
+func (p *pollService) GetPollByID(pollID gocql.UUID) (*Poll, error) {
+	return p.repo.GetPollByID(pollID)
+}
+
 func (p *pollService) CreatePoll(poll *Poll, answers *[]string) (gocql.UUID, error) {
 	pollID, _ := gocql.RandomUUID()
 	poll.ID = pollID
 
+	if time.Now().After(poll.DueTime) {
+		return gocql.UUID{}, errors.New("Cannot create poll with due time with the past")
+	}
+
 	err := p.repo.CreatePoll(poll)
 	if err != nil {
 		log.Fatal(err)
-		uuid, _ := gocql.UUIDFromBytes(nil)
-		return uuid, err
+		return gocql.UUID{}, err
 	}
 
 	for _, answer := range *answers {
@@ -40,8 +47,7 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]string) (gocql.UUID, err
 		err := p.repo.CreateAnswer(&a)
 		if err != nil {
 			log.Fatal(err)
-			uuid, _ := gocql.UUIDFromBytes(nil)
-			return uuid, err
+			return gocql.UUID{}, err
 		}
 	}
 
