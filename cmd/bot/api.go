@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
-	"log"
+	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -17,7 +18,7 @@ import (
 const minAnwers = 3
 const maxAnswers = 9
 
-func createRandomPoll(address string) (*poll.Poll, error) {
+func createRandomPoll(address string, dueTime time.Time) (*poll.Poll, error) {
 	type createPollDTO struct {
 		Title       string        `json:"title"`
 		Description string        `json:"description"`
@@ -38,16 +39,15 @@ func createRandomPoll(address string) (*poll.Poll, error) {
 		Title:       randString(20),
 		Description: randString(50),
 		PollType:    poll.PollType(rand.Intn(2) + 1),
-		// TODO: customizable?
-		DueTime: time.Now().Add(time.Second * time.Duration(60)),
-		Answers: answers,
+		DueTime:     dueTime,
+		Answers:     answers,
 	}
 
 	marshBody, _ := json.Marshal(data)
 
 	resp, err := http.Post(address+"/polls", "application/json", bytes.NewBuffer(marshBody))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -63,7 +63,7 @@ func createRandomPoll(address string) (*poll.Poll, error) {
 	responseData := response{}
 	err = json.Unmarshal([]byte(body), &responseData)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -81,7 +81,7 @@ func createRandomPoll(address string) (*poll.Poll, error) {
 func getActivePolls(address string) (*[]poll.Poll, error) {
 	resp, err := http.Get(address + "/polls")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -98,7 +98,7 @@ func getActivePolls(address string) (*[]poll.Poll, error) {
 func getAnswers(address string, pollData *poll.Poll) (*[]poll.Answer, error) {
 	resp, err := http.Get(address + "/polls/" + pollData.ID.String() + "/answers")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -122,7 +122,7 @@ func voteRandomlyForPoll(address string, pollData *poll.Poll, voterID gocql.UUID
 
 	resp, err := http.Get(address + "/polls/" + pollData.ID.String() + "/answers")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -147,9 +147,21 @@ func voteRandomlyForPoll(address string, pollData *poll.Poll, voterID gocql.UUID
 	body := voteDTO{VoterID: voterID, Answers: selectedAnswers}
 	marshBody, err := json.Marshal(body)
 
-	_, err = http.Post(address+"/polls/"+pollData.ID.String()+"/vote", "application/json", bytes.NewBuffer(marshBody))
+	resp, err = http.Post(address+"/polls/"+pollData.ID.String()+"/vote", "application/json", bytes.NewBuffer(marshBody))
+
+	if resp.StatusCode != http.StatusOK {
+		scanner := bufio.NewScanner(resp.Body)
+		scanner.Scan()
+		respBody := scanner.Text()
+		responseError := map[string]string{}
+		err = json.Unmarshal([]byte(respBody), &responseError)
+		errorMessage := responseError["error"]
+		fmt.Println(errorMessage)
+		return nil, errors.New(errorMessage)
+	}
+
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 
@@ -159,7 +171,7 @@ func voteRandomlyForPoll(address string, pollData *poll.Poll, voterID gocql.UUID
 func getPollResults(address string, pollData *poll.Poll) (*[]poll.Result, error) {
 	resp, err := http.Get(address + "/polls/" + pollData.ID.String() + "/results")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -170,7 +182,7 @@ func getPollResults(address string, pollData *poll.Poll) (*[]poll.Result, error)
 	resultsData := []poll.Result{}
 	err = json.Unmarshal([]byte(respBody), &resultsData)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return nil, err
 	}
 

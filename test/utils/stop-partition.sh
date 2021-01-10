@@ -1,2 +1,4 @@
 #!/bin/bash
-ip l s eth0 up
+
+iptables -D INPUT -p tcp --destination-port 7000 -j DROP
+iptables -D INPUT -p tcp --destination-port 7001 -j DROP
