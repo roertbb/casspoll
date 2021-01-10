@@ -1,4 +1,4 @@
-version: "2.4"
+version: "2"
 
 services:
   cass1:
@@ -10,21 +10,16 @@ services:
         limits:
           memory: 6G
         reservations:
-          memory: 3G
+          memory: 2G
     hostname: cass1
-#    mem_limit: 1024m
-#    healthcheck:
-#      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
-#      interval: 5s
-#      timeout: 5s
-#      retries: 60
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
     networks:
-      node1_net:
-        ipv4_address: 10.0.1.2
-        priority: 1000 # eth0
       cass_net:
         ipv4_address: 10.0.0.2
-        priority: 900 # eth1
     cap_add:
       - NET_ADMIN
     ports:
@@ -38,62 +33,42 @@ services:
       - ../schema:/schema
       - ../bin:/build
 
-#  cass2:
-#    image: cass
-#    build: ./cass
-#    container_name: cass2
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 6G
-#        reservations:
-#          memory: 3G
-#    hostname: cass2
-##    mem_limit: 1024m
-##    healthcheck:
-##      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
-##      interval: 5s
-##      timeout: 5s
-##      retries: 60
-#    networks:
-#      node2_net:
-#        ipv4_address: 10.0.2.3
-#        priority: 1000 # eth0
-#      cass_net:
-#        ipv4_address: 10.0.0.3
-#        priority: 900 # eth1
-#    cap_add:
-#      - NET_ADMIN
-#    ports:
-#      - "9043:9042"
-#      - "8081:8080" # expose 8081 for server
-#    environment:
-#      CASSANDRA_SERVER: "10.0.0.3"
-#      CASSANDRA_SEEDS: "10.0.0.2,10.0.0.3"
-#    # depends_on:
-#    #   cass1:
-#    #     condition: service_healthy
-#    volumes:
-#      - ./utils:/utils
-#      - ../schema:/schema
-#      - ../bin:/build
+  cass2:
+    image: cass
+    build: ./cass
+    container_name: cass2
+    deploy:
+      resources:
+        limits:
+          memory: 6G
+        reservations:
+          memory: 2G
+    hostname: cass2
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks:
+      cass_net:
+        ipv4_address: 10.0.0.3
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "9043:9042"
+      - "8081:8080" # expose 8081 for server
+    environment:
+      CASSANDRA_SERVER: "10.0.0.3"
+      CASSANDRA_SEEDS: "10.0.0.2,10.0.0.3"
+    depends_on:
+      cass1:
+        condition: service_healthy
+    volumes:
+      - ./utils:/utils
+      - ../schema:/schema
+      - ../bin:/build
 
 networks:
-  # default:
-  #   external:
-  #     name: host
-  node1_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.0.1.0/24
-  node2_net:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 10.0.2.0/24
   cass_net:
     driver: bridge
     ipam:
