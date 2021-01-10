@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -23,6 +22,7 @@ func getActivePolls(w http.ResponseWriter, r *http.Request) {
 	polls, err := pollService.GetActivePolls()
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -45,6 +45,7 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	var data createPollDTO
 	err := json.Unmarshal(reqBody, &data)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to parse request body"})
 		return
@@ -60,6 +61,7 @@ func createPoll(w http.ResponseWriter, r *http.Request) {
 	uuid, err := pollService.CreatePoll(&p, &data.Answers)
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -73,6 +75,7 @@ func getPollByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
 		return
@@ -81,6 +84,7 @@ func getPollByID(w http.ResponseWriter, r *http.Request) {
 	poll, err := pollService.GetPollByID(uuid)
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -95,6 +99,7 @@ func getAnswers(w http.ResponseWriter, r *http.Request) {
 	uuid, err := gocql.ParseUUID(vars["uuid"])
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
 		return
@@ -103,6 +108,7 @@ func getAnswers(w http.ResponseWriter, r *http.Request) {
 	answers, err := pollService.GetAnswers(uuid)
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -116,6 +122,7 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
 		return
@@ -124,6 +131,7 @@ func getResults(w http.ResponseWriter, r *http.Request) {
 	results, err := pollService.GetResults(uuid)
 
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -137,6 +145,7 @@ func vote(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid, err := gocql.ParseUUID(vars["uuid"])
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to find poll with given id"})
 		return
@@ -151,6 +160,7 @@ func vote(w http.ResponseWriter, r *http.Request) {
 	var data voteDTO
 	err = json.Unmarshal(reqBody, &data)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to parse request body"})
 		return
@@ -165,6 +175,7 @@ func vote(w http.ResponseWriter, r *http.Request) {
 
 	err = pollService.Vote(uuid, &answerUUIDs, voterUUID)
 	if err != nil {
+		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
@@ -176,12 +187,12 @@ func vote(w http.ResponseWriter, r *http.Request) {
 func main() {
 	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
 	if len(addresses) == 1 && addresses[0] == "" {
-		log.Fatal("ADDRESS env variable not specified")
+		fmt.Println("ADDRESS env variable not specified")
 		os.Exit(1)
 	}
 	keyspace := os.Getenv("KEYSPACE")
 	if keyspace == "" {
-		log.Fatal("KEYSPACE env variable not specified")
+		fmt.Println("KEYSPACE env variable not specified")
 		os.Exit(1)
 	}
 
@@ -198,5 +209,5 @@ func main() {
 
 	fmt.Println("server running - 127.0.0.1:8080")
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	fmt.Println(http.ListenAndServe(":8080", r))
 }
