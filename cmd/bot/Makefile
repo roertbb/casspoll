@@ -1,6 +1,6 @@
 deps:
 	go get
 run:
-	go run main.go
+	go run main.go api.go helpers.go
 build:
-	go build -o ../../bin/bot main.go
+	go build -o ../../bin/bot main.go api.go helpers.go
