@@ -2,7 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
+	"os"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -10,19 +14,19 @@ import (
 )
 
 func main() {
-	// addresses := strings.Split(os.Getenv("ADDRESS"), ",")
-	// if len(addresses) == 1 && addresses[0] == "" {
-	// 	log.Fatal("ADDRESS env variable not specified")
-	// 	os.Exit(1)
-	// }
+	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
+	if len(addresses) == 1 && addresses[0] == "" {
+		log.Fatal("ADDRESS env variable not specified")
+		os.Exit(1)
+	}
 
-	addresses := []string{"http://127.0.0.1:8080"}
+	// addresses := []string{"http://127.0.0.1:8080"}
 
 	// config
 	pollsNum := 10
-	partitionStartsIn := 5
-	pollEndInSeconds := 10
-	syncAfterSeconds := 60
+	partitionStartsIn := 10
+	pollEndInSeconds := 20
+	syncAfterSeconds := 30
 	// voterNo := 1
 
 	votingDone := false
@@ -72,7 +76,9 @@ func main() {
 	go func() {
 		<-startPartitionTimer.C
 		fmt.Println("partition start")
-
+		partitionCmd := exec.Command("docker", "exec", "cass1", "/bin/bash", "-c", "\"/utils/start-partition.sh\"")
+		partitionCmd.Start()
+		partitionCmd.Wait()
 	}()
 
 	finishVotingTimer := time.NewTimer(time.Second * time.Duration(pollEndInSeconds))
@@ -88,7 +94,9 @@ func main() {
 		fmt.Println("wrongAnswersCount", wrongAnswersCount)
 		fmt.Println("wrongPollWinner", wrongPollWinner)
 
-		// TODO: remove partition
+		partitionEnd := exec.Command("docker", "exec", "cass1", "/bin/bash", "-c", "\"/utils/stop-partition.sh\"")
+		partitionEnd.Start()
+		partitionEnd.Wait()
 
 		letItSyncTimer := time.NewTimer(time.Second * time.Duration(syncAfterSeconds))
 		<-letItSyncTimer.C
@@ -103,8 +111,8 @@ func main() {
 		doneChan <- true
 	}()
 
-	// spin up 10 voting threads - save locally what they voted for
 	// TODO: spin more than one thread and gather answers from them
+	// spin up 10 voting threads - save locally what they voted for
 	// for i := 0; i < voterNo; i++ {
 	go func() {
 		for !votingDone {
