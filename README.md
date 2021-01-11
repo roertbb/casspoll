@@ -150,10 +150,6 @@ wrongAnswersCount 0
 wrongPollWinner 0
 ```
 
-
-
-
-
 ### What can or does go wrong
 
  - Too many requests to Cassandra
