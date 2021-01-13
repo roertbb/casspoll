@@ -1,0 +1,92 @@
+pollsNum := 10
+partitionStartsIn := 10
+pollEndInSeconds := 20
+syncAfterSeconds := 30
+voterNo := 20
+---
+server logs:
+
+gocql: no response received from cassandra within timeout period
+gocql: no response received from cassandra within timeout period
+gocql: no response received from cassandra within timeout period
+gocql: no response received from cassandra within timeout period
+gocql: no response received from cassandra within timeout period
+---
+PollID: cbe28d4a-11f6-4e28-969e-e6badd0767b2 | AnswerID: 596499da-59dd-4eed-a72a-f720464368ab | wrong answer difference is - 71 / expected - 88
+PollID: cbe28d4a-11f6-4e28-969e-e6badd0767b2 | AnswerID: 909ba09f-c2d8-4d63-8664-eaf1452f54e3 | wrong answer difference is - 70 / expected - 88
+PollID: cbe28d4a-11f6-4e28-969e-e6badd0767b2 | AnswerID: bf814f81-ace0-40ca-9c1b-6489396e17ee | wrong answer difference is - 68 / expected - 88
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: c434da96-af2c-40d1-9ec5-3d987d6b83e0 | wrong answer difference is - 78 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 05087c9b-3a54-4574-a480-4f9599ec39c3 | wrong answer difference is - 73 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 06de4e48-fd12-4e95-9f66-9a4264bf38cf | wrong answer difference is - 77 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 23153890-13fc-4df3-8d70-834a35ab9614 | wrong answer difference is - 76 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 2a77fbb3-5fbf-491e-8fa1-2af97b4dbf78 | wrong answer difference is - 78 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 35b0dc36-5bd9-42b2-ba61-824416fa073b | wrong answer difference is - 80 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | wrong poll winner | is - 35b0dc36-5bd9-42b2-ba61-824416fa073b / expected - c434da96-af2c-40d1-9ec5-3d987d6b83e0
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | AnswerID: f35f3c7a-b7a4-4a37-b91a-9ecc7433bde7 | wrong answer difference is - 62 / expected - 82
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | AnswerID: b6079b51-2870-4c1a-9025-831aadd13520 | wrong answer difference is - 64 / expected - 82
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | AnswerID: c137905e-2c27-4449-8cda-e6b67863fb22 | wrong answer difference is - 66 / expected - 82
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | AnswerID: c5b3e8c3-4bfe-4e5e-985b-7fb9240fe690 | wrong answer difference is - 62 / expected - 82
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | AnswerID: e4e2ff66-1aba-4cac-a18d-bf60d75f6de2 | wrong answer difference is - 61 / expected - 82
+PollID: 8a7f0b76-0e70-4d9e-8709-0487d56b5a40 | wrong poll winner | is - c137905e-2c27-4449-8cda-e6b67863fb22 / expected - f35f3c7a-b7a4-4a37-b91a-9ecc7433bde7
+PollID: 2f7f384d-37c9-4ac9-bc64-3df57a46ecbf | AnswerID: 633716ca-5939-4556-98fe-cfe22bdf741e | wrong answer difference is - 10 / expected - 13
+PollID: 2f7f384d-37c9-4ac9-bc64-3df57a46ecbf | AnswerID: 999f4f74-1039-46d9-9ddd-d28dda6113dc | wrong answer difference is - 15 / expected - 19
+PollID: 2f7f384d-37c9-4ac9-bc64-3df57a46ecbf | AnswerID: edf1b3a6-228e-4409-8bfc-f08033adb8f1 | wrong answer difference is - 27 / expected - 31
+PollID: 2f7f384d-37c9-4ac9-bc64-3df57a46ecbf | AnswerID: 169205f5-09b6-4bcc-b09e-90657967406b | wrong answer difference is - 10 / expected - 11
+PollID: 2f7f384d-37c9-4ac9-bc64-3df57a46ecbf | AnswerID: 5f05f6f8-621b-409e-8e0b-9c4091ed9ea8 | wrong answer difference is - 14 / expected - 17
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 09c5467c-ca36-4783-88bd-9e4ab8510fd2 | wrong answer difference is - 75 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 105c02ab-81b1-42a8-b53c-02417e5da29f | wrong answer difference is - 79 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 14e51f93-d8b0-4f52-b75e-44bcf1c75a09 | wrong answer difference is - 82 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 2cefa4a5-6171-4b98-bdf0-cef1ba5373ec | wrong answer difference is - 76 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 3fc65ddd-494e-428c-9466-38ebfa9f93de | wrong answer difference is - 79 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 75023cc1-270a-4b96-93ab-6517bcbd30e8 | wrong answer difference is - 77 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: aadc857c-f7c9-4a04-b2ab-55bfcf2697a1 | wrong answer difference is - 78 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | AnswerID: 07d6831a-a1f3-480c-97d9-d22b6a37b280 | wrong answer difference is - 82 / expected - 93
+PollID: d92eefef-250d-4970-8bc7-022b4eadeea0 | wrong poll winner | is - 14e51f93-d8b0-4f52-b75e-44bcf1c75a09 / expected - 09c5467c-ca36-4783-88bd-9e4ab8510fd2
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 56294d34-1b57-4e9b-89fe-9c3a5c42efe6 | wrong answer difference is - 76 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 5b9b91e2-105c-4166-865d-9cf027eb4d37 | wrong answer difference is - 72 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 798f7ce7-9ae9-42c9-9c28-876c2a7685d7 | wrong answer difference is - 76 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 17df84bd-93ff-4607-850d-214c5647973c | wrong answer difference is - 70 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 1e31191f-6ab0-4854-bf19-8236ca2184df | wrong answer difference is - 71 / expected - 88
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: a38008a3-6265-4635-99ae-cfaad223bbf2 | wrong answer difference is - 92 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 12d607f9-b7a1-42a2-8a98-2ebd788007a4 | wrong answer difference is - 87 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 285c8488-c3a3-46ef-b22a-84c3e7f622e8 | wrong answer difference is - 90 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 30b7faea-16ed-4988-b305-6551d737892a | wrong answer difference is - 85 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 65deec2b-d20a-4f28-9858-b7d4fe77c72b | wrong answer difference is - 90 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 672b70e5-b2b4-4775-bccf-b709ed14738f | wrong answer difference is - 95 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 94e3cf4d-3f8d-4854-a6b1-38cb32706fda | wrong answer difference is - 91 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | wrong poll winner | is - 672b70e5-b2b4-4775-bccf-b709ed14738f / expected - a38008a3-6265-4635-99ae-cfaad223bbf2
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: 9fdb8fe0-8f8d-4f79-8605-a4a15fb9cc5e | wrong answer difference is - 67 / expected - 77
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: e8220737-3764-4947-bec4-83f3c199e8d8 | wrong answer difference is - 65 / expected - 77
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: 1443fc2b-29c7-4789-976d-d515ddc243b8 | wrong answer difference is - 63 / expected - 77
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: 1d9ec5c0-472d-4767-bf6e-5e827ad6cd06 | wrong answer difference is - 62 / expected - 77
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: 598a1d6a-2008-4d0c-b5ec-75cec4b2d2d7 | wrong answer difference is - 65 / expected - 77
+PollID: e916ec51-a795-48f3-b733-a5f61f42fde8 | AnswerID: 82914e0a-3317-450c-a86d-3bda5f3f5965 | wrong answer difference is - 60 / expected - 77
+PollID: 7b806cfd-a432-4d45-bf5a-80c95a4a8afa | AnswerID: 258f782f-f7bf-4584-bafd-77531d44cff0 | wrong answer difference is - 24 / expected - 34
+PollID: 7b806cfd-a432-4d45-bf5a-80c95a4a8afa | AnswerID: 27b13bba-6359-4381-bd18-f5fe5291a0f7 | wrong answer difference is - 28 / expected - 33
+PollID: 7b806cfd-a432-4d45-bf5a-80c95a4a8afa | AnswerID: 7afd51f1-fea6-474e-82e6-086a204901f2 | wrong answer difference is - 26 / expected - 27
+PollID: 7b806cfd-a432-4d45-bf5a-80c95a4a8afa | wrong poll winner | is - 27b13bba-6359-4381-bd18-f5fe5291a0f7 / expected - 258f782f-f7bf-4584-bafd-77531d44cff0
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 0313d219-6d01-418c-98ca-c45610128b0c | wrong answer difference is - 76 / expected - 103
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 1199293d-18b4-4ba3-9dfb-4f25a03df62f | wrong answer difference is - 79 / expected - 103
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 9f338ff2-3d6d-42da-9476-aa221f32b507 | wrong answer difference is - 85 / expected - 103
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | wrong poll winner | is - 9f338ff2-3d6d-42da-9476-aa221f32b507 / expected - 0313d219-6d01-418c-98ca-c45610128b0c
+after voting time finished
+wrongAnswersCount 51
+wrongPollWinner 6
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 17df84bd-93ff-4607-850d-214c5647973c | wrong answer difference is - 89 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 56294d34-1b57-4e9b-89fe-9c3a5c42efe6 | wrong answer difference is - 89 / expected - 88
+PollID: 86413f37-b8a8-44b8-b7e1-52ac01b651c8 | AnswerID: 798f7ce7-9ae9-42c9-9c28-876c2a7685d7 | wrong answer difference is - 89 / expected - 88
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: a38008a3-6265-4635-99ae-cfaad223bbf2 | wrong answer difference is - 108 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 285c8488-c3a3-46ef-b22a-84c3e7f622e8 | wrong answer difference is - 108 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 65deec2b-d20a-4f28-9858-b7d4fe77c72b | wrong answer difference is - 108 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 672b70e5-b2b4-4775-bccf-b709ed14738f | wrong answer difference is - 108 / expected - 107
+PollID: b7541e01-11d9-412f-8231-d2a66cc6742e | AnswerID: 94e3cf4d-3f8d-4854-a6b1-38cb32706fda | wrong answer difference is - 108 / expected - 107
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 0313d219-6d01-418c-98ca-c45610128b0c | wrong answer difference is - 104 / expected - 103
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 1199293d-18b4-4ba3-9dfb-4f25a03df62f | wrong answer difference is - 104 / expected - 103
+PollID: 3f3a1fbe-003e-4643-84a7-79a93ba1b506 | AnswerID: 9f338ff2-3d6d-42da-9476-aa221f32b507 | wrong answer difference is - 104 / expected - 103
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 05087c9b-3a54-4574-a480-4f9599ec39c3 | wrong answer difference is - 105 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 23153890-13fc-4df3-8d70-834a35ab9614 | wrong answer difference is - 105 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 2a77fbb3-5fbf-491e-8fa1-2af97b4dbf78 | wrong answer difference is - 105 / expected - 104
+PollID: 3c2f7754-6199-4606-81e0-e03da6f39f98 | AnswerID: 35b0dc36-5bd9-42b2-ba61-824416fa073b | wrong answer difference is - 105 / expected - 104
+after removing partition and syncing
+wrongAnswersCount 15
+wrongPollWinner 0
