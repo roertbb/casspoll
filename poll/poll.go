@@ -2,7 +2,7 @@ package poll
 
 import (
 	"errors"
-	"log"
+	"fmt"
 	"sort"
 	"time"
 
@@ -37,7 +37,7 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]string) (gocql.UUID, err
 
 	err := p.repo.CreatePoll(poll)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 		return gocql.UUID{}, err
 	}
 
@@ -46,7 +46,7 @@ func (p *pollService) CreatePoll(poll *Poll, answers *[]string) (gocql.UUID, err
 		a := Answer{ID: answerID, Text: answer, PollID: pollID}
 		err := p.repo.CreateAnswer(&a)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 			return gocql.UUID{}, err
 		}
 	}
@@ -87,7 +87,7 @@ func (p *pollService) Vote(pollID gocql.UUID, answerIDs *[]gocql.UUID, voterID g
 
 		err := p.repo.CreateVote(&vote, now)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 			return err
 		}
 	}
