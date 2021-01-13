@@ -13,6 +13,11 @@ import (
 	"github.com/roertbb/casspoll/poll"
 )
 
+type VoteData struct {
+	pollID    gocql.UUID
+	answersID []gocql.UUID
+}
+
 func main() {
 	addresses := strings.Split(os.Getenv("ADDRESS"), ",")
 	if len(addresses) == 1 && addresses[0] == "" {
@@ -23,17 +28,19 @@ func main() {
 	// addresses := []string{"http://127.0.0.1:8080"}
 
 	// config
-	pollsNum := 40
-	partitionStartsIn := 15
-	pollEndInSeconds := 30
-	syncAfterSeconds := 20
+	pollsNum := 10
+	partitionStartsIn := 10
+	pollEndInSeconds := 20
+	syncAfterSeconds := 30
 	// voterNo := 1
+	voterNo := 30
 
 	votingDone := false
 
 	createChan := make(chan bool)
 	answersChan := make(chan bool)
 	doneChan := make(chan bool)
+	voteChan := make(chan VoteData)
 
 	// create 100 polls with dueTime in 2 min
 	dueTime := time.Now().Add(time.Second * time.Duration(pollEndInSeconds))
@@ -111,26 +118,32 @@ func main() {
 		doneChan <- true
 	}()
 
-	// TODO: spin more than one thread and gather answers from them
-	// spin up 10 voting threads - save locally what they voted for
-	// for i := 0; i < voterNo; i++ {
+	// gathering votes
 	go func() {
-		for !votingDone {
-			addressID := rand.Intn(len(addresses))
-			pollID := rand.Intn(len(*polls))
-			voterUUID, _ := gocql.RandomUUID()
-
-			currentPoll := (*polls)[pollID]
-			selectedVotes, err := voteRandomlyForPoll(addresses[addressID], &currentPoll, voterUUID)
-			if err == nil {
-				for _, answerID := range *selectedVotes {
-					realResults[currentPoll.ID][answerID]++
-				}
+		for data := range voteChan {
+			for _, answerID := range data.answersID {
+				realResults[data.pollID][answerID]++
 			}
-
 		}
 	}()
-	// }
+
+	// spin up n voting threads - save locally what they voted for
+	for i := 0; i < voterNo; i++ {
+		go func() {
+			for !votingDone {
+				addressID := rand.Intn(len(addresses))
+				pollID := rand.Intn(len(*polls))
+				voterUUID, _ := gocql.RandomUUID()
+
+				currentPoll := (*polls)[pollID]
+				selectedVotes, err := voteRandomlyForPoll(addresses[addressID], &currentPoll, voterUUID)
+				if err == nil {
+					voteChan <- VoteData{pollID: currentPoll.ID, answersID: *selectedVotes}
+				}
+
+			}
+		}()
+	}
 
 	<-doneChan
 }

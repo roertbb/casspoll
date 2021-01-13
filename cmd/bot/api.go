@@ -133,12 +133,20 @@ func voteRandomlyForPoll(address string, pollData *poll.Poll, voterID gocql.UUID
 	answersData := []poll.Answer{}
 	err = json.Unmarshal([]byte(respBody), &answersData)
 
+	if err != nil {
+		fmt.Println("failed to unmarshal answers")
+		return nil, errors.New("failed to unmarshal answers")
+	}
+
 	selectedAnswers := []gocql.UUID{}
 	if pollData.PollType == poll.MultipleChoice {
 		randID := rand.Intn(len(answersData))
 		selectedAnswers = append(selectedAnswers, answersData[randID].ID)
 	} else {
 		IDs := rand.Perm(len(answersData))
+		if len(IDs) == 0 {
+			return nil, errors.New("selected no answers")
+		}
 		for _, idx := range IDs {
 			selectedAnswers = append(selectedAnswers, answersData[idx].ID)
 		}

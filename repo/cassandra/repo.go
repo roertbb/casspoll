@@ -1,6 +1,7 @@
 package cassandra
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -49,7 +50,7 @@ func (c *cassandraRepo) GetActivePolls() (*[]poll.Poll, error) {
 		})
 	}
 	if err := iter.Close(); err != nil {
-		log.Fatal(err)
+		fmt.Println("GetActivePolls", err)
 		return nil, err
 	}
 
@@ -78,7 +79,7 @@ func (c *cassandraRepo) GetPollByID(pollID gocql.UUID) (*poll.Poll, error) {
 
 	err := c.session.Query(`SELECT title, description, due_time, poll_type FROM polls WHERE poll_id = ?`, pollID).Consistency(gocql.One).Scan(&title, &description, &dueTime, &pollType)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("GetPollByID", err)
 		return nil, err
 	}
 
@@ -104,7 +105,7 @@ func (c *cassandraRepo) GetAnswersByPollID(pollID gocql.UUID) (*[]poll.Answer, e
 		answers = append(answers, poll.Answer{ID: answerID, Text: text, PollID: pollID})
 	}
 	if err := iter.Close(); err != nil {
-		log.Fatal(err)
+		fmt.Println("GetAnswersByPollID", err)
 		return nil, err
 	}
 
@@ -130,7 +131,7 @@ func (c *cassandraRepo) GetResults(pollID gocql.UUID) (*map[gocql.UUID]int, erro
 		results[answerID] = votesNo
 	}
 	if err := iter.Close(); err != nil {
-		log.Fatal(err)
+		fmt.Println("GetResults", err)
 		return nil, err
 	}
 

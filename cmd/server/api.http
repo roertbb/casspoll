@@ -1,8 +1,14 @@
 GET http://localhost:8080/polls HTTP/1.1
 
+# curl --header "Content-Type: application/json" \
+#   http://localhost:8080/polls
+
 ###
 
 GET http://localhost:8080/polls/502dcead-c631-44cb-bf1e-a0e5c0158e9f HTTP/1.1
+
+# curl --header "Content-Type: application/json" \
+#   http://localhost:8080/polls/502dcead-c631-44cb-bf1e-a0e5c0158e9f
 
 ###
 
@@ -26,9 +32,15 @@ Content-Type: application/json
 
 GET http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/answers HTTP/1.1
 
+# curl --header "Content-Type: application/json" \
+#   http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/answers
+
 ###
 
 GET http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/results HTTP/1.1
+
+# curl --header "Content-Type: application/json" \
+#   http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/results
 
 ###
 
@@ -37,5 +49,10 @@ Content-Type: application/json
 
 {
     "voterId": "f05b4ddf-a543-4eaa-8a36-5f9b1523d80e",
-    "answers": ["ea93b3a6-f556-4cf3-9aa5-3795f1ce2931"],    
+    "answers": ["ea93b3a6-f556-4cf3-9aa5-3795f1ce2931"]
 }
+
+# curl --header "Content-Type: application/json" \
+#   --request POST \
+#   --data '{"voterId": "f05b4ddf-a543-4eaa-8a36-5f9b1523d80e", "answers": ["ea93b3a6-f556-4cf3-9aa5-3795f1ce2931"]}' \
+#   http://localhost:8080/polls/aaf71c02-dc07-48b5-b594-a27fb0771564/vote
