@@ -23,10 +23,10 @@ func main() {
 	// addresses := []string{"http://127.0.0.1:8080"}
 
 	// config
-	pollsNum := 10
-	partitionStartsIn := 10
-	pollEndInSeconds := 20
-	syncAfterSeconds := 30
+	pollsNum := 40
+	partitionStartsIn := 15
+	pollEndInSeconds := 30
+	syncAfterSeconds := 20
 	// voterNo := 1
 
 	votingDone := false
